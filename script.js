@@ -1,32 +1,33 @@
-const boxes = document.querySelectorAll('.image');
-let dragged = null;
+// Select all the divs inside the parent
+const images = document.querySelectorAll('#parent > div');
 
-// Add drag & drop listeners
-boxes.forEach((box) => {
-  box.addEventListener('dragstart', () => {
-    dragged = box;
-    box.classList.add('selected');
+let draggedDiv = null;
+
+// When dragging starts
+images.forEach(div => {
+  div.addEventListener('dragstart', () => {
+    draggedDiv = div;
+    div.classList.add('selected');
   });
 
-  box.addEventListener('dragend', () => {
-    box.classList.remove('selected');
+  // When dragging ends
+  div.addEventListener('dragend', () => {
+    div.classList.remove('selected');
   });
 
-  box.addEventListener('dragover', (e) => {
-    e.preventDefault(); // Necessary for drop to work
-  });
-
-  box.addEventListener('drop', (e) => {
+  // Allow dropping by preventing default
+  div.addEventListener('dragover', (e) => {
     e.preventDefault();
-    if (dragged && dragged !== box) {
-      // Get <img> elements inside both boxes
-      const draggedImg = dragged.querySelector('img');
-      const targetImg = box.querySelector('img');
+  });
 
-      // Swap their src attributes
-      const temp = draggedImg.src;
-      draggedImg.src = targetImg.src;
-      targetImg.src = temp;
+  // Handle drop event
+  div.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (draggedDiv && draggedDiv !== div) {
+      // Swap background images
+      const temp = draggedDiv.style.backgroundImage;
+      draggedDiv.style.backgroundImage = div.style.backgroundImage;
+      div.style.backgroundImage = temp;
     }
   });
 });
