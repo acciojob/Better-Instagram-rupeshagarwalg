@@ -3,31 +3,56 @@ const images = document.querySelectorAll('#parent > div');
 
 let draggedDiv = null;
 
-// When dragging starts
 images.forEach(div => {
-  div.addEventListener('dragstart', () => {
+  // make sure draggable attribute exists (HTML already sets it, but this is safe)
+  div.setAttribute('draggable', 'true');
+
+  div.addEventListener('dragstart', (e) => {
+    // remember the element being dragged
     draggedDiv = div;
     div.classList.add('selected');
+
+    // required in many browsers to allow dropping
+    try {
+      e.dataTransfer.setData('text/plain', div.id || '');
+      e.dataTransfer.effectAllowed = 'move';
+    } catch (err) {
+      // some environments might throw; safe to ignore
+    }
   });
 
-  // When dragging ends
   div.addEventListener('dragend', () => {
+    draggedDiv = null;
     div.classList.remove('selected');
   });
 
-  // Allow dropping by preventing default
+  // required so drop event is fired
   div.addEventListener('dragover', (e) => {
     e.preventDefault();
   });
 
-  // Handle drop event
+  // optional: visual feedback when dragging over
+  div.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    div.classList.add('drag-over');
+  });
+
+  div.addEventListener('dragleave', () => {
+    div.classList.remove('drag-over');
+  });
+
   div.addEventListener('drop', (e) => {
     e.preventDefault();
-    if (draggedDiv && draggedDiv !== div) {
-      // Swap background images
-      const temp = draggedDiv.style.backgroundImage;
-      draggedDiv.style.backgroundImage = div.style.backgroundImage;
-      div.style.backgroundImage = temp;
-    }
+    div.classList.remove('drag-over');
+
+    if (!draggedDiv || draggedDiv === div) return;
+
+    // Read computed background-image values (works even if image is in CSS)
+    const draggedBg = window.getComputedStyle(draggedDiv).backgroundImage;
+    const targetBg = window.getComputedStyle(div).backgroundImage;
+
+    // Swap by setting inline styles (this creates element.style.backgroundImage)
+    draggedDiv.style.backgroundImage = targetBg;
+    div.style.backgroundImage = draggedBg;
   });
 });
